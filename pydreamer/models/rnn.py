@@ -58,7 +58,7 @@ class GRUCellStack(nn.Module):
         self.layers = nn.ModuleList(layers)
 
     def forward(self, input: Tensor, state: Tensor) -> Tensor:
-        input_states = state.chunk(self.num_layers, -1)
+        input_states = state.chunk(self.num_layers, -1)  # split the tensor into n chunks at dim=-1
         output_states = []
         x = input
         for i in range(self.num_layers):

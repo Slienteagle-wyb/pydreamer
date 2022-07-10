@@ -144,6 +144,7 @@ class RSSMCell(nn.Module):
         x = self.post_norm(x)
         post_in = F.elu(x)
         post = self.post_mlp(post_in)                                    # (B, S*S)
+        # categorical reparameter and sample
         post_distr = self.zdistr(post)
         sample = post_distr.rsample().reshape(B, -1)
 
@@ -171,6 +172,7 @@ class RSSMCell(nn.Module):
         za = F.elu(x)
         h = self.gru(za, in_h)                  # (B, D)
 
+        # w/o embed
         x = self.prior_mlp_h(h)
         x = self.prior_norm(x)
         x = F.elu(x)
@@ -183,6 +185,7 @@ class RSSMCell(nn.Module):
             (h, sample),                  # (B,D+S)
         )
 
+    # sepreate transition predictor
     def batch_prior(self,
                     h: Tensor,     # tensor(T, B, D)
                     ) -> Tensor:
@@ -201,3 +204,4 @@ class RSSMCell(nn.Module):
             return distr
         else:
             return diag_normal(pp)
+

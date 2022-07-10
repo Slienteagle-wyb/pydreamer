@@ -14,6 +14,11 @@ def create_env(env_id: str, no_terminal: bool, env_time_limit: int, env_action_r
         from .minigrid import MiniGrid
         env = MiniGrid(env_id)
 
+    elif env_id.startswith('Olympics_'):
+        from .olympics import Olympics
+        env = Olympics(level=env_id.split('_')[1].lower())
+        env = DictWrapper(env)
+
     elif env_id.startswith('Atari-'):
         from .atari import Atari
         env = Atari(env_id.split('-')[1].lower(), action_repeat=env_action_repeat)
@@ -51,6 +56,7 @@ def create_env(env_id: str, no_terminal: bool, env_time_limit: int, env_action_r
         env = OneHotActionWrapper(env)
     if env_time_limit > 0:
         env = TimeLimitWrapper(env, env_time_limit)
+
     env = ActionRewardResetWrapper(env, no_terminal)
     env = CollectWrapper(env)
     return env

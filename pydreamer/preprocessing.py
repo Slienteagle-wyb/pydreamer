@@ -20,7 +20,7 @@ def img_to_onehot(x: np.ndarray, n_categories) -> np.ndarray:
 def to_image(x: np.ndarray) -> np.ndarray:
     if x.dtype == np.uint8:
         x = x.astype(np.float32)
-        x = x / 255.0 - 0.5  # type: ignore
+        x = x / 10.0 - 0.5  # type: ignore
     else:
         assert 0.0 <= x[0, 0, 0, 0, 0] and x[0, 0, 0, 0, 0] <= 1.0
         x = x.astype(np.float32)

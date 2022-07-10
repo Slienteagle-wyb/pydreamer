@@ -1,8 +1,8 @@
 defaults:
   # Job
-  n_steps: 1_000_000
+  n_steps: 1_000_000  # training steps
   n_env_steps: 1_000_000_000
-  run_name:
+  run_name: olympics_running_1
   resume_id:
   offline_data_dir:
   offline_prefill_dir:
@@ -95,7 +95,7 @@ defaults:
   # Generator
   generator_workers: 4
   generator_workers_eval: 1
-  generator_prefill_steps: 200_000
+  generator_prefill_steps: 200_00
   generator_prefill_policy: random
   limit_step_ratio: 0
   env_id:
@@ -189,6 +189,23 @@ dmlab_offline:
   imag_horizon: 5
   n_steps: 225_000
 
+olympics:
+  n_steps: 99_000_000
+  n_env_steps: 200_000_000
+  # Env
+  env_id: Olympics_running-competition
+  action_dim: 36
+  env_action_repeat: 4
+  env_time_limit: 27_000  # =108_000/action_repeat = 30 minutes of game play.
+  generator_workers: 8
+  generator_prefill_steps: 50_000
+  clip_rewards: tanh
+  # Model
+  deter_dim: 1024
+  kl_weight: 0.1
+  gamma: 0.99
+  entropy: 0.001
+
 vectorenv:
   env_id: CartPole-v0
   action_dim: 2
@@ -203,7 +220,7 @@ debug:
   save_interval: 10
   data_workers: 0
   generator_workers: 1
-  generator_prefill_steps: 10_000
+  generator_prefill_steps: 10_00
   batch_length: 15
   batch_size: 5
   imag_horizon: 3

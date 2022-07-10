@@ -213,11 +213,9 @@ class WorldModel(nn.Module):
         self.kl_balance = None if conf.kl_balance == 0.5 else conf.kl_balance
 
         # Encoder
-
         self.encoder = MultiEncoder(conf)
 
         # Decoders
-
         features_dim = conf.deter_dim + conf.stoch_dim * (conf.stoch_discrete or 1)
         self.decoder = MultiDecoder(features_dim, conf)
 
@@ -276,7 +274,6 @@ class WorldModel(nn.Module):
             return torch.tensor(0.0), features, states, out_state, {}, {}
 
         # Decoder
-
         loss_reconstr, metrics, tensors = self.decoder.training_step(features, obs)
 
         # KL loss
@@ -299,13 +296,11 @@ class WorldModel(nn.Module):
             loss_kl = dpost.log_prob(z) - dprior.log_prob(z)
 
         # Total loss
-
         assert loss_kl.shape == loss_reconstr.shape
         loss_model_tbi = self.kl_weight * loss_kl + loss_reconstr
         loss_model = -logavgexp(-loss_model_tbi, dim=2)
 
         # Metrics
-
         with torch.no_grad():
             loss_kl = -logavgexp(-loss_kl_exact, dim=2)  # Log exact KL loss even when using IWAE, it avoids random negative values
             entropy_prior = dprior.entropy().mean(dim=2)
@@ -319,7 +314,6 @@ class WorldModel(nn.Module):
                            entropy_post=entropy_post.mean())
 
         # Predictions
-
         if do_image_pred:
             with torch.no_grad():
                 prior_samples = self.core.zdistr(prior).sample().reshape(post_samples.shape)

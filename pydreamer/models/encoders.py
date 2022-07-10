@@ -74,7 +74,8 @@ class ConvEncoder(nn.Module):
     def __init__(self, in_channels=3, cnn_depth=32, activation=nn.ELU):
         super().__init__()
         self.out_dim = cnn_depth * 32
-        kernels = (4, 4, 4, 4)
+        # kernels = (4, 4, 4, 4)
+        kernels = (2, 2, 2, 2)
         stride = 2
         d = cnn_depth
         self.model = nn.Sequential(

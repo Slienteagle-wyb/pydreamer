@@ -67,7 +67,7 @@ class MultiDecoder(nn.Module):
             loss_reconstr += self.vecobs_weight * loss_vecobs_tbi
             metrics.update(loss_vecobs=loss_vecobs.detach().mean())
             tensors.update(loss_vecobs=loss_vecobs.detach(),
-                        vecobs_rec=vecobs_rec.detach())
+                           vecobs_rec=vecobs_rec.detach())
 
         loss_reward_tbi, loss_reward, reward_rec = self.reward.training_step(features, obs['reward'])
         loss_reconstr += self.reward_weight * loss_reward_tbi
@@ -112,7 +112,8 @@ class ConvDecoder(nn.Module):
                  ):
         super().__init__()
         self.in_dim = in_dim
-        kernels = (5, 5, 6, 6)
+        # kernels = (5, 5, 6, 6)
+        kernels = (3, 4, 4, 6)
         stride = 2
         d = cnn_depth
         if mlp_layers == 0:
@@ -147,7 +148,7 @@ class ConvDecoder(nn.Module):
             nn.ConvTranspose2d(d, out_channels, kernels[3], stride))
 
     def forward(self, x: Tensor) -> Tensor:
-        x, bd = flatten_batch(x)
+        x, bd = flatten_batch(x)  # bd means [T, B, C], and x is (T*B*C, feature_dim)
         y = self.model(x)
         y = unflatten_batch(y, bd)
         return y
@@ -162,7 +163,6 @@ class ConvDecoder(nn.Module):
         assert len(features.shape) == 4 and len(target.shape) == 5
         I = features.shape[2]
         target = insert_dim(target, 2, I)  # Expand target with iwae_samples dim, because features have it
-
         decoded = self.forward(features)
         loss_tbi = self.loss(decoded, target)
         loss_tb = -logavgexp(-loss_tbi, dim=2)  # TBI => TB

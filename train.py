@@ -1,27 +1,16 @@
 import argparse
-import logging
-import logging.config
-import os
-import sys
-import time
 from distutils.util import strtobool
 from collections import defaultdict
 from datetime import datetime
-from itertools import chain
 from logging import critical, debug, error, info, warning
 from multiprocessing import Process
-from pathlib import Path
 from typing import Iterator, Optional
 
 import mlflow
-import numpy as np
 import scipy.special
 import torch
-import torch.distributions as D
-import torch.nn as nn
 from torch import Tensor, tensor
 from torch.cuda.amp import GradScaler, autocast
-from torch.profiler import ProfilerActivity
 from torch.utils.data import DataLoader
 
 import generator
@@ -145,7 +134,6 @@ def run(conf):
         test_dirs = eval_dirs
 
     # Data reader
-
     repository = MlflowEpisodeRepository(input_dirs)
     data = DataSequential(repository,
                           conf.batch_length,
@@ -175,7 +163,6 @@ def run(conf):
     mlflow_log_text(repr(model), 'architecture.txt')
 
     # Training
-
     optimizers = model.init_optimizers(conf.adam_lr, conf.adam_lr_actor, conf.adam_lr_critic, conf.adam_eps)
     resume_step = tools.mlflow_load_checkpoint(model, optimizers)
     if resume_step:
