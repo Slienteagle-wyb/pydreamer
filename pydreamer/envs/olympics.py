@@ -28,6 +28,7 @@ ALL_GAMES = frozenset([
 def make_env(sub_game, max_steps):
     if sub_game == 'running-competition':
         map_id = random.randint(1, 4)
+        # map_id = 4
         game_map = create_scenario(sub_game)
         env = Running_competition(meta_map=game_map, map_id=map_id,
                                   vis=200, vis_clear=5, agent1_color='light red',

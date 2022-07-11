@@ -188,7 +188,7 @@ def run(conf):
                                 num_workers=conf.data_workers,
                                 prefetch_factor=20 if conf.data_workers else 2,  # GCS download has to be shorter than this many batches (e.g. 1sec < 20*300ms)
                                 pin_memory=True))
-
+    # amp enable with scaler scale adjust
     scaler = GradScaler(enabled=conf.amp)
 
     with get_profiler(conf) as profiler:
@@ -207,6 +207,7 @@ def run(conf):
                 # Forward
 
                 with timer('forward'):
+                    # amp for all training scope if available
                     with autocast(enabled=conf.amp):
 
                         state = states.get(wid) or model.init_state(conf.batch_size * conf.iwae_samples)

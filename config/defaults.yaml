@@ -44,7 +44,7 @@ defaults:
   adam_eps: 1.0e-5
   keep_state: True
   batch_length: 50
-  batch_size: 50
+  batch_size: 32
   device: "cuda:0"
   grad_clip: 200
   grad_clip_ac: 200
@@ -197,7 +197,7 @@ olympics:
   action_dim: 36
   env_action_repeat: 4
   env_time_limit: 27_000  # =108_000/action_repeat = 30 minutes of game play.
-  generator_workers: 8
+  generator_workers: 1
   generator_prefill_steps: 50_000
   clip_rewards: tanh
   # Model
