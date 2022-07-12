@@ -1,3 +1,5 @@
+import time
+
 import torch
 from distutils.util import strtobool
 from pydreamer.models import dreamer
@@ -8,7 +10,7 @@ import argparse
 from pydreamer import tools
 
 if __name__ == '__main__':
-    model_path = f'/home/yibo/Documents/pydreamer/mlruns/0/latest.pt'
+    model_path = f'/home/yibo/Documents/pydreamer/mlruns/0/epoch=163500.pt'
     check_points = torch.load(model_path, map_location=torch.device('cpu'))
     model_state_dict = check_points['model_state_dict']
 

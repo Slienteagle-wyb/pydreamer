@@ -69,7 +69,8 @@ class MultiDecoder(nn.Module):
             tensors.update(loss_vecobs=loss_vecobs.detach(),
                            vecobs_rec=vecobs_rec.detach())
 
-        loss_reward_tbi, loss_reward, reward_rec = self.reward.training_step(features, obs['reward'])
+        reward_train = obs['reward'] + obs['intrinsic_reward']
+        loss_reward_tbi, loss_reward, reward_rec = self.reward.training_step(features, reward_train)
         loss_reconstr += self.reward_weight * loss_reward_tbi
         metrics.update(loss_reward=loss_reward.detach().mean())
         tensors.update(loss_reward=loss_reward.detach(),

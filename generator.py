@@ -201,7 +201,7 @@ def main(env_id='MiniGrid-MazeS11N-v0',
                 value_terminal = data['policy_value'][-2] - data['reward'][-1]  # This should be zero, because value[last] = reward[last]
                 metrics[f'{metrics_prefix}/policy_value_terminal'] = value_terminal
 
-            # Aggregate every 10 episodes
+            # Aggregate every 10 episodes == log_every
 
             for k, v in metrics.items():
                 if not np.isnan(v):

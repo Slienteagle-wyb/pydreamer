@@ -124,7 +124,7 @@ class Dreamer(nn.Module):
         tensors.update(**tensors_probe)
 
         # Policy
-
+        # the world model is fixed during behavior learning, so init state is detached when fed into world model
         in_state_dream: StateB = map_structure(states, lambda x: flatten_batch(x.detach())[0])  # type: ignore  # (T,B,I) => (TBI)
         # Note features_dream includes the starting "real" features at features_dream[0]
         features_dream, actions_dream, rewards_dream, terminals_dream = \
@@ -161,10 +161,10 @@ class Dreamer(nn.Module):
         features = []
         actions = []
         state = in_state
-        self.wm.requires_grad_(False)  # Prevent dynamics gradiens from affecting world model
+        self.wm.requires_grad_(False)  # Prevent dynamics gradients from affecting world model
 
         for i in range(imag_horizon):
-            feature = self.wm.core.to_feature(*state)
+            feature = self.wm.core.to_feature(*state)  # feature cat(h, z)
             action_dist = self.ac.forward_actor(feature)
             if dynamics_gradients:
                 action = action_dist.rsample()
@@ -273,9 +273,6 @@ class WorldModel(nn.Module):
         if forward_only:
             return torch.tensor(0.0), features, states, out_state, {}, {}
 
-        # Decoder
-        loss_reconstr, metrics, tensors = self.decoder.training_step(features, obs)
-
         # KL loss
 
         d = self.core.zdistr
@@ -295,6 +292,15 @@ class WorldModel(nn.Module):
             z = post_samples.reshape(dpost.batch_shape + dpost.event_shape)
             loss_kl = dpost.log_prob(z) - dprior.log_prob(z)
 
+        # calculate the intrinsic Curiosity reward measured by kl divergence
+        raw_difference = loss_kl.squeeze().detach()
+        raw_difference = torch.nn.functional.softmax(raw_difference / 0.3, dim=0)
+        intrinsic_reward = raw_difference * 1.25
+        obs['intrinsic_reward'] = intrinsic_reward
+
+        # Decoder
+        loss_reconstr, metrics, tensors = self.decoder.training_step(features, obs)
+
         # Total loss
         assert loss_kl.shape == loss_reconstr.shape
         loss_model_tbi = self.kl_weight * loss_kl + loss_reconstr
@@ -311,7 +317,8 @@ class WorldModel(nn.Module):
             metrics.update(loss_model=loss_model.mean(),
                            loss_kl=loss_kl.mean(),
                            entropy_prior=entropy_prior.mean(),
-                           entropy_post=entropy_post.mean())
+                           entropy_post=entropy_post.mean(),
+                           intrinsic_reward=intrinsic_reward.mean())
 
         # Predictions
         if do_image_pred:

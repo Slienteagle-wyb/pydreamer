@@ -20,15 +20,18 @@ ALL_GAMES = frozenset([
     'running-competition',
     'table-hockey',
     'football',
-    'wrestling',
-    'integrated'
+    'wrestling'
 ])
 
 
 def make_env(sub_game, max_steps):
+    if sub_game == 'integrated':
+        sub_game = random.choices([*ALL_GAMES], k=1)[0]
+        print(sub_game)
+
     if sub_game == 'running-competition':
-        map_id = random.randint(1, 4)
-        # map_id = 4
+        # map_id = random.randint(1, 4)
+        map_id = 1
         game_map = create_scenario(sub_game)
         env = Running_competition(meta_map=game_map, map_id=map_id,
                                   vis=200, vis_clear=5, agent1_color='light red',
@@ -60,6 +63,8 @@ class Olympics(gym.Env):
         self.ctrl_agent_idx = ctrl_agent_idx
         self.num_agent = num_agent
         self.current_energy = 1000
+        self.eps_step = 0
+        self.max_step = max_step
 
         self.env = make_env(
             self.sub_game,
@@ -72,6 +77,8 @@ class Olympics(gym.Env):
 
     def reset(self):
         state = self.env.reset()
+        self.current_energy = 1000
+        self.eps_step = 0
         if RENDER:
             self.env.render()
         return self.observation(state)
@@ -95,22 +102,29 @@ class Olympics(gym.Env):
         action_ctrl = ACTION_SET[actions]
         action_opponent = ACTION_SET[random.randint(0, 35)]
         state, reward, done, _ = self.env.step([action_opponent, action_ctrl])
+        self.eps_step += 1
         obs = self.observation(state)
-        reward = self.get_reward(reward)
+        reward = self.get_reward(reward, done)
 
         if RENDER:
             self.env.render()
+            print(self.current_energy)
         return obs, reward, done, {}
 
-    def get_reward(self, reward_raw):
-        reward_finished = 10 * reward_raw[1]
-        # reward_curiosity = (1000 - self.current_energy) / 1000.0
-        reward = reward_finished
+    def get_reward(self, reward_raw, done):
+        reward_finished = (self.max_step / self.eps_step) * reward_raw[1] * 10
+
+        if self.current_energy == -1 and done:
+            reward_punish_exhausted = -10
+        else:
+            reward_punish_exhausted = 0
+
+        reward = reward_finished + reward_punish_exhausted
         return reward
 
 
 if __name__ == '__main__':
-    env = Olympics(level='football')
+    env = Olympics(level='integrated')
     obs = env.reset()
     ctrl_agent = random_agent()
     oppo_agent = random_agent()
